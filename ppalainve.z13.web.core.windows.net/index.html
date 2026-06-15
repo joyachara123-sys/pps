@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from ppalainve.z13.web.core.windows.net/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 13 Nov 2025 16:56:19 GMT -->
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PayPal — Processing → Success → Receipt</title>
+
+<!-- fontawesome for icons -->
+<link rel="stylesheet" href="../cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- html2pdf -->
+<script src="../cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+/* Global */
+* { box-sizing: border-box; margin:0; padding:0; font-family: "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+html,body { height:100%; }
+body {
+  background: #f5f7fa;
+  color: #333;
+  padding: 18px;
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Shared container style */
+.page {
+  width:100%;
+  max-width:700px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+  overflow:hidden;
+  margin: 8px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.page:not(.hidden) { opacity: 1; }
+
+/* Header used across screens */
+.header {
+  background: linear-gradient(180deg,#0b4f7a,#003087);
+  color:#fff;
+  padding:14px 14px;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  justify-content: center;
+  flex-wrap:wrap;
+}
+
+.header .logo-wrap { display:flex; align-items:center; gap:10px; justify-content:center; }
+.header img.logo { height:34px; width:auto; display:inline-block; flex-shrink:0; }
+.header .brand { font-size:18px; font-weight:700; letter-spacing:.3px; }
+.header .headline { font-size:13px; opacity:0.95; }
+
+.content { padding:18px; }
+
+/* Processing screen */
+.processing-screen .phone-number { font-size:15px; margin-bottom:8px; color:#333; font-weight:600; text-align:center;}
+.domain { font-size:13px; color:#666; text-align:center; margin-bottom:12px; }
+.processing-box { background:#fff8e1; border:1px solid #ffd54f; border-radius:10px; padding:16px; margin:12px 0; text-align:center; }
+.spinner { width:56px; height:56px; border:6px solid rgba(0,48,135,0.12); border-left:6px solid #003087; border-radius:50%; margin:0 auto 12px; animation: spin 1s linear infinite; }
+@keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+.processing-text { font-size:14px; color:#333; font-weight:700; }
+
+/* Success screen */
+.success-screen { text-align:center; padding:14px 12px; }
+
+.checkmark {
+  width:88px; height:88px; margin:6px auto 12px; display:block;
+  transform: scale(0);
+  animation: bounceIn 0.8s forwards;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.checkmark circle { stroke-dasharray: 166; stroke-dashoffset: 166; fill:none; stroke:#28a745; stroke-width:2; stroke-miterlimit:10; animation: drawCircle 0.6s cubic-bezier(.65,0,.45,1) forwards; }
+.checkmark path { stroke-dasharray: 48; stroke-dashoffset: 48; fill:none; stroke:#28a745; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; animation: drawCheck 0.3s cubic-bezier(.65,0,.45,1) 0.6s forwards; }
+
+@keyframes drawCircle { to { stroke-dashoffset:0; } }
+@keyframes drawCheck { to { stroke-dashoffset:0; } }
+
+.success-title { font-size:20px; font-weight:700; color:#28a745; margin-bottom:8px; }
+.success-message { color:#666; font-size:14px; line-height:1.4; }
+
+/* Receipt screen */
+#receiptContainer { padding-bottom: 8px; background: #fff; }
+
+.receipt-screen .section-title {
+  font-size:17px; color:#003087; font-weight:700; margin-bottom:10px; border-bottom:1px solid #e9eef6; padding-bottom:8px;
+}
+
+.transaction-details { background:#f8f9fa; border-radius:8px; padding:12px; margin-bottom:12px; }
+.detail-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eef2f6; font-size:15px; align-items:center; }
+.detail-row:last-child { border-bottom:none; }
+.label { color:#555; font-weight:700; font-size:14px; }
+.value { color:#222; text-align:right; font-size:14px; }
+.amount { font-size:20px; font-weight:800; color:#003087; }
+
+.info-box, .security-box, .contact { border-radius:8px; padding:10px; margin-bottom:10px; font-size:14px; }
+.info-box { background:#fff7e6; border:1px solid #ffe8b8; color:#5a4b21; }
+.security-box { background:#fff0f0; border:1px solid #f5c6cb; color:#6b2020; }
+.contact { background:#e7f3ff; border:1px solid rgba(0,48,135,0.08); color:#003087; text-align:center; }
+
+.download-section { text-align:center; margin-top:6px; margin-bottom:8px; padding:0 8px; }
+.download-btn {
+  background:#0070ba; color:#fff; border:none; padding:12px 22px; border-radius:999px; font-weight:700; cursor:pointer; display:inline-flex; gap:10px; align-items:center; font-size:15px;
+}
+.download-btn:disabled { opacity:0.6; cursor:default; }
+
+.footer { padding:12px; text-align:center; font-size:13px; color:#777; border-top:1px solid #eef2f6; background:#fbfcfd; }
+
+/* Toast */
+.success-toast { display:none; position:fixed; right:18px; top:18px; background:#28a745; color:#fff; padding:10px 14px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.12); z-index:1200; font-weight:700; }
+
+/* Visibility helpers */
+.hidden { display:none; }
+
+/* Responsive adjustments for smaller screens */
+@media (max-width:600px){
+  body { padding:12px; }
+  .page { border-radius:10px; max-width:100%; width:100%; box-shadow: 0 4px 18px rgba(0,0,0,0.06); }
+  .header { padding:12px; gap:8px; }
+  .header img.logo { height:30px; }
+  .header .brand { font-size:16px; }
+  .header .headline { font-size:12px; }
+
+  .content { padding:14px; }
+  .processing-box { padding:12px; }
+  .spinner { width:48px; height:48px; }
+
+  .transaction-title { font-size:15px; }
+  .transaction-amount { font-size:22px; }
+  .transaction-details { padding:10px; }
+  .detail-row { padding:8px 0; font-size:14px; }
+  .label { font-size:13px; }
+  .value { font-size:13px; }
+  .download-btn { width:100%; justify-content:center; padding:12px; font-size:15px; }
+  #receiptContainer { padding: 10px 14px 18px; }
+  .page.receipt-screen { max-width:540px; margin-left:auto; margin-right:auto; }
+}
+@media (max-width:380px){
+  .header img.logo { height:26px; }
+  .brand { font-size:15px; }
+  .headline { font-size:11px; }
+  .download-btn { padding:10px; font-size:14px; }
+  .amount { font-size:18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Processing screen -->
+<div id="processingView" class="page processing-screen" role="region" aria-label="processing">
+  <div class="header">
+    <div class="logo-wrap">
+      <img class="logo" src="../www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal logo">
+      <div style="text-align:left;">
+        <div class="brand">PayPal</div>
+        <div class="headline">Processing Transaction</div>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="phone-number">+1 (877) 942-7830</div>
+    <div class="domain">Just now.core.windows.net</div>
+    <div class="protection" style="background-color: #f0f8ff; border-left: 4px solid #0070ba; padding: 12px; margin:14px 0; font-size: 14px; border-radius: 0 8px 8px 0;">
+      You're protected by PayPal Purchase Protection. All transactions are monitored 24/7.
+      <div class="help-number" style="font-weight:bold; color:#0070ba; font-size:14px;">Help Line Number: <a href="tel:+1(877) 942-7830" style="color:#0070ba; text-decoration:none;">+1 (877) 942-7830</a></div>
+    </div>
+    <div class="transaction" style="border: 1px solid #e1e5e9; border-radius: 10px; padding: 16px; margin-bottom: 16px; background-color: #fafbfc;">
+      <div class="transaction-title" style="font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #333;">Securely sending $499.09 USD to Apple Gift Card</div>
+      <div class="transaction-amount" style="font-size: 24px; font-weight: 700; color: #333; margin-bottom: 6px;">$499.09 USD</div>
+      <div class="transaction-detail" style="font-size: 14px; color: #666;">Apple Gift Card</div>
+    </div>
+    <div class="processing-box">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="processing-text">Please do not close this window. Your transaction is being processed with enhanced security.</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-links" style="display: flex; justify-content: center; gap: 16px; margin-bottom: 10px;">
+      <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Help Center</a>
+      <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Privacy Policy</a>
+      <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Terms & Conditions</a>
+    </div>
+    <div style="font-size:12px; color:#777;">© PayPal 2025. All rights reserved.</div>
+  </div>
+</div>
+
+<!-- Success screen -->
+<div id="successView" class="page success-screen hidden" role="region" aria-label="success">
+  <div class="header">
+    <div class="logo-wrap">
+      <img class="logo" src="../www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal logo">
+      <div style="text-align:left;">
+        <div class="brand">PayPal</div>
+        <div class="headline">Transaction Status</div>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="protection" style="background-color: #f0f8ff; border-left: 4px solid #0070ba; padding: 12px; margin-bottom: 14px; font-size: 14px; border-radius: 0 8px 8px 0;">
+      Your protected by PayPal Purchase Protection. All transactions are monitored 24/7.
+      <div class="help-number" style="font-weight:bold; color:#0070ba; margin-top:8px; font-size:14px;">Help Line Number: <a href="tel:+1(877) 942-7830" style="color:#0070ba; text-decoration:none;">+1 (877) 942-7830</a></div>
+    </div>
+    <div class="divider" style="height: 1px; background-color: #e1e5e9; margin: 14px 0;"></div>
+    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="25"></circle>
+      <path d="M14.1 27.2l7.1 7.2 16.7-16.8"></path>
+    </svg>
+    <h2 class="success-title">Transaction Completed</h2>
+    <p class="success-message">Your payment has been successfully sent. A receipt is now being generated.</p>
+  </div>
+  <div class="footer">
+    <div class="footer-links" style="display: flex; justify-content: center; gap: 16px; margin-bottom: 10px;">
+      <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Help Center</a>
+      <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Privacy Policy</a>
+      <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Terms & Conditions</a>
+    </div>
+    <div style="font-size:12px; color:#777;">© PayPal 2025. All rights reserved.</div>
+  </div>
+</div>
+
+<!-- Receipt screen -->
+<br><br>
+<div id="receiptView" class="page receipt-screen hidden" role="region" aria-label="receipt">
+  <div id="receiptContainer" style="max-width:720px; margin:0 auto;">
+    <div class="header" style="background: transparent; color: #222; padding:18px 12px; border-bottom: 1px solid #eef2f6;">
+      <div style="display:flex; align-items:center; gap:12px; justify-content:center; width:100%; flex-wrap:wrap;">
+        <img class="logo" src="../www.paypalobjects.com/webstatic/icon/pp258.png" alt="Receipt logo" style="height:48px;">
+        <div style="text-align:center;">
+          <div class="brand" style="color:#003087; font-size:20px;">PayPal</div>
+          <div class="headline" style="color:#666; font-size:13px;">Payment Receipt</div>
+        </div>
+      </div>
+    </div>
+    <div class="content" style="padding-top:12px;">
+      <div class="section-title">Transaction Details</div>
+      <div class="transaction-details">
+        <div class="detail-row"><div class="label">Transaction ID</div><div class="value">TRX-20251016-12345</div></div>
+        <div class="detail-row"><div class="label">Date</div><div class="value">October 24, 2025</div></div>
+        <div class="detail-row"><div class="label">Status</div><div class="value" style="color:#28a745; font-weight:800;">Completed</div></div>
+        <div class="detail-row"><div class="label">Paid To</div><div class="value">Apple Gift Card</div></div>
+        <div class="detail-row"><div class="label">Payment Method</div><div class="value">PayPal</div></div>
+        <div class="detail-row"><div class="label">Amount</div><div class="value amount">$499.09 USD</div></div>
+      </div>
+      <div class="info-box"><strong>Note:</strong> This receipt is for your records. The transaction may take a short time to appear on your bank statement.</div>
+      <div class="security-box"><strong>Security:</strong> Never share your password, OTP, or full card details with anyone. If you suspect unauthorized activity, contact the merchant or your bank.</div>
+      <div class="contact" style="font-size:1.2em; font-weight:bold;">
+        PayPal Support: <a href="tel:+1(877) 942-7830" style="color:#003087; text-decoration:none;">+1 (877) 942-7830</a>
+       </div>
+      <div class="download-section">
+        <button id="downloadNow" class="download-btn" aria-label="Download receipt as PDF">
+          <i class="fas fa-download" aria-hidden="true"></i> Download Receipt (PDF)
+        </button>
+      </div>
+    </div>
+    <div class="footer" style="margin-top:6px;">
+      <div class="footer-links" style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px;">
+        <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Help Center</a>
+        <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Privacy Policy</a>
+        <a href="#" style="color: #0070ba; text-decoration: none; font-size: 13px;">Terms & Conditions</a>
+      </div>
+      <div style="font-size:12px; color:#777;">© PayPal 2025. All rights reserved.</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="success-toast" role="alert"><i class="fas fa-check-circle"></i> PDF downloaded successfully!</div>
+
+<script>
+// Auto-progress timings (ms)
+const PROCESSING_DURATION = 2000;
+const SUCCESS_DURATION = 1000;
+
+// DOM refs
+const processingView = document.getElementById('processingView');
+const successView = document.getElementById('successView');
+const receiptView = document.getElementById('receiptView');
+const toast = document.getElementById('toast');
+
+function show(el){
+  processingView.classList.add('hidden');
+  successView.classList.add('hidden');
+  receiptView.classList.add('hidden');
+  el.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  show(processingView);
+  setTimeout(() => {
+    show(successView);
+    setTimeout(() => { show(receiptView); }, SUCCESS_DURATION);
+  }, PROCESSING_DURATION);
+});
+
+// PDF download
+document.addEventListener('DOMContentLoaded', function(){
+  const downloadBtn = document.getElementById('downloadNow');
+  const receiptEl = document.getElementById('receiptContainer');
+
+  const pdfOptions = {
+    margin: [10,10,10,10],
+    filename: `PayPal_Receipt_${new Date().getTime()}.pdf`,
+    image:{ type:'jpeg', quality:0.98 },
+    html2canvas:{ scale:2.5, useCORS:true, logging:false,
+      windowWidth: Math.max(document.documentElement.clientWidth||0, window.innerWidth||0),
+      windowHeight: Math.max(document.documentElement.clientHeight||0, window.innerHeight||0)
+    },
+    jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' },
+    pagebreak:{ mode:'avoid-all' }
+  };
+
+  function showToast(){
+    toast.style.display='block';
+    setTimeout(()=>{ toast.style.display='none'; }, 1100);
+  }
+
+  downloadBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    const origHtml = downloadBtn.innerHTML;
+    downloadBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Generating...';
+    downloadBtn.disabled = true;
+    html2pdf().set(pdfOptions).from(receiptEl).save()
+      .then(()=>{
+        downloadBtn.innerHTML=origHtml;
+        downloadBtn.disabled=false;
+        showToast();
+      })
+      .catch(err=>{
+        console.error(err);
+        downloadBtn.innerHTML=origHtml;
+        downloadBtn.disabled=false;
+        alert('Failed to generate PDF. Please try again.');
+      });
+  });
+});
+</script>
+</body>
+
+<!-- Mirrored from ppalainve.z13.web.core.windows.net/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 13 Nov 2025 16:56:20 GMT -->
+</html>
